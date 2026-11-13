@@ -1,0 +1,82 @@
+---
+description: German sentence structure (Satzbau) for Persian speakers — never guess word order; check V2, verb-final, TeKaMoLo, sentence bracket, questions, "nicht" and object order with the deterministic tool, fix by rule, and drill with quizzes. Apply whenever German text is written or corrected for Persian-speaking learners.
+globs: "**/*.{md,txt,json,yaml,yml}"
+alwaysApply: false
+---
+
+# German word order for Persian speakers — check it, never guess it
+
+## The contract
+
+1. **Never guess word order.** When German text is on the table, run
+   the checker (zero-dependency, pure stdlib):
+
+   ```bash
+   python3 scripts/deutsch_word_order.py check "Ich jeden Tag gehe zur Schule" [--json]
+   ```
+
+   It reports the rule code (DWO-01 … DWO-10), the error in Persian,
+   and the correct sentence. Exit codes: `0` = clean · `1` = findings
+   or unknown verb · `2` = usage error.
+
+2. **Fix deterministically, then re-check.** The fixer reorders tokens
+   by rule and re-runs the checker until the sentence is clean:
+
+   ```bash
+   python3 scripts/deutsch_word_order.py fix "Ich jeden Tag gehe zur Schule"
+   # → Ich gehe jeden Tag zur Schule.   (اصلاح شد: DWO-01)
+   ```
+
+   If the tool reports remaining findings, say so — do not hand-fix
+   around it and claim clean.
+
+3. **Explain the rule in Persian.** Every rule has a Persian
+   explanation with a correct and a wrong example:
+
+   ```bash
+   python3 scripts/deutsch_word_order.py explain DWO-03
+   python3 scripts/deutsch_word_order.py rules   # all ten rules
+   ```
+
+   Full tables: `references/word-order-rules.md`; clause types:
+   `references/clause-guide.md`.
+
+4. **Check conservatively.** Only what is decidable gets flagged —
+   V2, verb-final, TeKaMoLo, bracket, questions, "nicht", object
+   order — on A1–B1 sentences with known verbs. A sentence with no
+   known finite verb is reported as **unknown**, never guessed.
+   **No finding is not a proof of correctness** — say that when
+   reporting.
+
+5. **Drill and export.** `quiz [--n 5] [--level A2] [--seed N]
+   [--answers a|b|c]` scrambles correct sentences for reordering;
+   `anki [--out cards.tsv]` exports the 48 sentence pairs as
+   Anki-importable TSV.
+
+## The ten rules
+
+| Code | Rule |
+|---|---|
+| DWO-01 | Verb-second (V2): exactly one constituent before the verb |
+| DWO-02 | Verb-final in subordinate clauses (weil/dass/wenn/…) |
+| DWO-03 | TeKaMoLo: time → manner → place |
+| DWO-04 | Sentence bracket: participle / infinitive / separable prefix last |
+| DWO-05 | Yes/no question verb-first |
+| DWO-06 | W-word first, verb second |
+| DWO-07 | No V1 statement (imperative excepted) |
+| DWO-08 | V2 after und/aber/oder/denn/sondern |
+| DWO-09 | "nicht" never directly before the verb |
+| DWO-10 | Pronoun objects before noun objects; Akk pronoun before Dat pronoun |
+
+## Limits
+
+- Curated lexicon is A1–B1 core vocabulary (73 verbs, 48 sentence
+  pairs, v1.0.0) — not a dictionary replacement for verbs outside it.
+- The checker handles simple main/subordinate clauses and questions,
+  not relative clauses, Ersatzinfinitiv, or fronted objects with
+  pronoun objects.
+- A deterministic reference, not a teacher: no judgment on style or
+  naturalness.
+
+The full skill with references and the MCP server lives in
+`skills/deutsch-word-order-fa/` and `mcp-server/`.
